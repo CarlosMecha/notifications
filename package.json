@@ -4,6 +4,7 @@
   "description": "Small HTTP server to push and pull notifications.",
   "main": "server.js",
   "dependencies": {
+    "body-parser": "^1.12.4",
     "express": "^4.12.4",
     "sqlite3": "^3.0.8"
   },
