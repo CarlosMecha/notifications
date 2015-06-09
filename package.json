@@ -1,0 +1,30 @@
+{
+  "name": "notifications",
+  "version": "1.0.0",
+  "description": "Small HTTP server to push and pull notifications.",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.12.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CarlosMecha/notifications.git"
+  },
+  "keywords": [
+    "notification",
+    "server",
+    "pull",
+    "push"
+  ],
+  "author": "Carlos Mecha",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/CarlosMecha/notifications/issues"
+  },
+  "homepage": "https://github.com/CarlosMecha/notifications#readme"
+}
