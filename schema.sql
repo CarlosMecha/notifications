@@ -1,9 +1,7 @@
 
--- SQLite notification schema.
-
 CREATE TABLE notifications(
     uuid TEXT NOT NULL PRIMARY KEY,
-    timestamp TEXT NOT NULL DEFAULT CURRENT_TIME,
+    timestamp INTEGER NOT NULL,
     topic TEXT NOT NULL,
     payload TEXT
 );
