@@ -5,7 +5,7 @@ var uuidGenerator = require('node-uuid');
 var sqlite = require('sqlite3').verbose();
 
 var checkStmt = 'SELECT 1 FROM notifications';
-var insertStmt = 'INSERT INTO notifications (uuid, payload) VALUES (?, ?)';
+var insertStmt = 'INSERT INTO notifications (uuid, topic, timestamp, payload) VALUES (?, ?, ?, ?)';
 var selectStmt = 'SELECT uuid, timestamp, topic, payload FROM notifications ORDER BY timestamp LIMIT ?';
 var deleteStmt = 'DELETE FROM notifications WHERE uuid = ?';
 var schema = './schema.sql';
@@ -31,7 +31,7 @@ module.exports = function(databaseFile, callback) {
      */
     function checkDb(cb) {
         db.get('SELECT 1', function(err, row){
-            cb((err != undefined));
+            cb((err == undefined));
         });
     }
 
@@ -40,7 +40,7 @@ module.exports = function(databaseFile, callback) {
      */
     function checkSchema(cb){
         db.get(checkStmt, function(err, row){
-            cb((err != undefined));
+            cb((err == undefined));
         });
     }
 
@@ -50,7 +50,7 @@ module.exports = function(databaseFile, callback) {
     function createSchema(schema, cb) {
         async.waterfall([
             function(callback){
-                fs.readFile(schema, function(err, data){
+                fs.readFile(schema, 'utf-8', function(err, data){
                     if(err){
                         callback(err);
                     } else {
@@ -59,7 +59,7 @@ module.exports = function(databaseFile, callback) {
                 });
             },
             function(sql, callback){
-                db.run(sql, callback);
+                db.exec(sql, callback);
             }
         ], function(err, results){
             cb(err);
@@ -94,13 +94,13 @@ module.exports = function(databaseFile, callback) {
                     createSchema(schema, callback);
                 }
             },
-            function(_, callback) {
+            function(callback) {
                 insert = db.prepare(insertStmt, callback);
             },
-            function(_, callback) {
+            function(callback) {
                 select = db.prepare(selectStmt, callback);
             },
-            function(_, callback) {
+            function(callback) {
                 del = db.prepare(deleteStmt, callback);
             }
         ], cb);
@@ -115,7 +115,7 @@ module.exports = function(databaseFile, callback) {
     function push(topic, payload, callback){
         var uuid = uuidGenerator.v1();
         var timestamp = Date.now();
-        insert.run(topic, timestamp, JSON.stringify(payload), callback);
+        insert.run(uuid, topic, timestamp, JSON.stringify(payload), callback);
     }
 
     /**
@@ -136,7 +136,7 @@ module.exports = function(databaseFile, callback) {
                         results.push(row);   
                     }
                 },
-                function(err, results){
+                function(err, res){
                     callback(err, results);
                 }
             );
@@ -154,7 +154,7 @@ module.exports = function(databaseFile, callback) {
                         },
                         function(err, results){
                             cb(err, results);
-                        }
+                        });
                 },
                 pop: function(cb) {
                     // All synchronous
@@ -165,9 +165,9 @@ module.exports = function(databaseFile, callback) {
                         cb(null);
                     }, 0);
                 }
-            }, function(err, results){
+            }, function(err, res){
                 callback(err, (err) ? null : results);
-            }
+            });
         }
     }
 
@@ -175,10 +175,19 @@ module.exports = function(databaseFile, callback) {
      * Closes the database.
      */
     function close() {
+        if(insert != null){
+            insert.finalize();
+        }
+        if(select != null){
+            select.finalize();
+        }
+        if(del != null){
+            del.finalize();
+        }
         db.close();
     }
 
-    init(function(err){
+    init(schema, function(err){
         if(err) {
             cb(err);
         } else {

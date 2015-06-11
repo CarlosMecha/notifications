@@ -14,18 +14,18 @@ app.get('/:topic?', function(req, res){
     var topic = req.params.topic;
     var limit = req.query.limit || 1;
     var requeue = (req.query.requeue !== undefined);
-    queues.get(topic, limit, requeue, function(err, res){
+    queues.get(topic, limit, requeue, function(err, results){
         if(err){
             res.status(500).json({error: err});
         } else {
-            res.json(res);
+            res.json(results);
         }
     });
 });
 
 app.post('/:topic?', function(req, res){
     var topic = req.params.topic || 'default';
-    queues.push(topic, function(err){
+    queues.push(topic, req.body, function(err){
         if(err){
             res.status(500).json({error: err});
         } else {
@@ -54,7 +54,7 @@ mq(function(err, q) {
     }
 
     queues = q;
-    server = app.listen(3000, function(){
+    server = app.listen(3000, 'localhost', function(){
         var host = server.address().address;
         var port = server.address().port;
         console.log('Server listening at http://%s:%s', host, port);
