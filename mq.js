@@ -6,7 +6,7 @@ var sqlite = require('sqlite3').verbose();
 
 var checkStmt = 'SELECT 1 FROM notifications';
 var insertStmt = 'INSERT INTO notifications (uuid, topic, timestamp, payload) VALUES (?, ?, ?, ?)';
-var selectStmt = 'SELECT uuid, timestamp, topic, payload FROM notifications ORDER BY timestamp LIMIT ?';
+var selectStmt = 'SELECT uuid, timestamp, topic, payload FROM notifications ORDER BY timestamp DESC LIMIT ?';
 var deleteStmt = 'DELETE FROM notifications WHERE uuid = ?';
 var schema = './schema.sql';
 

@@ -19,6 +19,12 @@ The body defines the payload of the notification.
 ## Configuration
 By default, the server listen the port 3000.
 
+## Scripts
+- `conf.sh`: Host and port configurations.
+- `get.sh <topic> <limit>`: Gets and requeues notifications.
+- `pop.sh <topic> <limit>`: Retrieves notifications.
+- `push.sh <topic> <data>`: Pushes a notification.  
+
 ## Start the server
 
 ```bash
