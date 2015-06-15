@@ -17,7 +17,11 @@ query parameter `limit` with limit of returned records. Also, `requeue` could be
 be deleted.
 
 - `POST /:topic?`: Pushes a notification to the server. If the topic is not set, the default one will be assigned.
-The body defines the payload of the notification.
+The body defines the payload of the notification. `Content-Type` header defines the format of the payload. Currently supported:
+
+    - `application/json`: JSON payload. Default if the header is not provided.
+
+If the content type is not supported, is going to be stored as a binary array, and returned as an array of bytes.
 
 ## Configuration
 Check `config.json`.

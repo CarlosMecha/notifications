@@ -7,6 +7,13 @@ var app = express();
 var mq = require('./mq');
 
 var config = require('./config');
+var defaultContentType = 'application/json';
+var encoders = {
+    'application/json': JSON.stringfy
+};
+var decoders = {
+    'application/json': JSON.load,
+};
 
 var transports = [];
 if(config.log.persistent) {
@@ -50,7 +57,8 @@ app.post('/:topic?', function(req, res){
     logger.debug('Received POST %s', req.originalUrl);
     logger.debug('Body %j', req.body, {});
     var topic = req.params.topic || 'default';
-    queues.push(topic, req.body, function(err){
+    var format = req.get('Content-Type') || defaultContentType;
+    queues.push(topic, format, req.body, function(err){
         if(err){
             logger.error(err);
             res.status(500).json({error: err});
@@ -100,4 +108,7 @@ if(config.db.persistent) {
     logger.debug('Set efemeral mq service.');
     mq(init);
 }
+
+mq.encoders = encoders;
+mq.decoders = decoders;
 
