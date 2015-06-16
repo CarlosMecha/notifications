@@ -21,7 +21,10 @@ The body defines the payload of the notification. `Content-Type` header defines 
 
     - `application/json`: JSON payload. Default if the header is not provided.
 
-If the content type is not supported, is going to be stored as a binary array, and returned as an array of bytes.
+If the content type is not supported, is going to be stored as a binary array, and returned as an array of bytes or string, using
+the default encoder and decoder.
+
+To add custom encoders/decoders, update `mq.encoders` and `mq.decoders` with the supported format types. 
 
 ## Configuration
 Check `config.json`.
