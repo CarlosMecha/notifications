@@ -1,13 +1,13 @@
 
+var async = require('async');
 var express = require('express');
 var bodyParser = require('body-parser');
 var winston = require('winston');
 var util = require('util');
-var app = express();
-var mq = require('./mq');
-
+var Mq = require('./mq');
 var config = require('./config');
 
+// Logging
 var transports = [];
 if(config.log.persistent) {
     transports.push(new winston.transports.File({
@@ -22,8 +22,27 @@ if(config.log.persistent) {
 
 var logger = new winston.Logger({transports: transports});
 
-var queues = null;
+// Mq service
+var dbFile = null;
+if(config.db.persistent) {
+    logger.debug('Set persistent mq service.');
+    dbFile = config.db.filename;
+} else {
+    logger.debug('Set ephemeral mq service.');
+}
+
+var queues = new Mq(dbFile);
+queues.encoders = {
+    'application/json': JSON.stringify
+};
+queues.decoders = {
+    'application/json': JSON.parse
+};
+queues.logger = logger;
+
+// Express App
 var server = null;
+var app = express();
 
 app.use(bodyParser.json());
 
@@ -46,11 +65,13 @@ app.get('/:topic?', function(req, res){
     });
 });
 
+var defaultContentType = 'application/json';
 app.post('/:topic?', function(req, res){
     logger.debug('Received POST %s', req.originalUrl);
     logger.debug('Body %j', req.body, {});
     var topic = req.params.topic || 'default';
-    queues.push(topic, req.body, function(err){
+    var format = req.get('Content-Type') || defaultContentType;
+    queues.push(topic, format, req.body, function(err){
         if(err){
             logger.error(err);
             res.status(500).json({error: err});
@@ -71,33 +92,37 @@ function shutdown() {
         logger.debug('Shutting down http server.');
         server.close();
     }
-}
-
-function init(err, mqService) {
-    if(err) {
-        logger.error(err);
-        return;
-    }
-
-    queues = mqService;
-    server = app.listen(config.port, config.host, function(){
-        var host = server.address().address;
-        var port = server.address().port;
-        logger.info('Server listening at http://%s:%s', host, port);
-    });
-
+    process.exit(0);
 }
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
+process.on('uncaughtException', function(err) {
+    logger.error('Caught exception: %s', err, err);
+    shutdown();
+});
 
 // Init
 logger.debug('Initializing the server.');
-if(config.db.persistent) {
-    logger.debug('Set persistent mq service.');
-    mq(config.db.filename, init);
-} else {
-    logger.debug('Set efemeral mq service.');
-    mq(init);
-}
+
+// Start listening
+async.series({
+    initMq: function(callback){
+        logger.info('MQ Service ready and listening.');
+        queues.listen(callback);
+    },
+    initServer: function(callback){
+        server = app.listen(config.port, config.host, function(){
+            var host = server.address().address;
+            var port = server.address().port;
+            logger.info('HTTP server listening at http://%s:%s', host, port);
+        });
+    }
+}, function(err, res) {
+    if(err){
+        logger.error(err);
+    } else {
+        logger.debug('Server initialized.');
+    }
+});
 
