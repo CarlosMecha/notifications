@@ -4,7 +4,7 @@
   "description": "A client to retrieve and push notifications to the server.",
   "main": "notif-client.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha --reporter spec"
   },
   "keywords": [
     "notifications",
@@ -15,6 +15,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "async": "^1.2.1",
+    "chai": "^3.0.0",
+    "mocha": "^2.2.5",
     "notifications": "file:../..",
     "request": "^2.58.0"
   }
