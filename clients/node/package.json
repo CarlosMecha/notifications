@@ -1,0 +1,21 @@
+{
+  "name": "notifications-client",
+  "version": "1.0.0",
+  "description": "A client to retrieve and push notifications to the server.",
+  "main": "notif-client.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "notifications",
+    "sqlite3",
+    "server"
+  ],
+  "author": "Carlos Mecha",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "async": "^1.2.1",
+    "notifications": "file:../..",
+    "request": "^2.58.0"
+  }
+}
