@@ -84,15 +84,26 @@ app.post('/:topic?', function(req, res){
 
 function shutdown() {
     logger.info('Shutting down the server.');
-    if(queues != null){
-        logger.debug('Shutting down mq service.');
-        queues.close();
-    }
-    if(server != null){
-        logger.debug('Shutting down http server.');
-        server.close();
-    }
-    process.exit(0);
+    async.series({
+        closeMq: function(cb) {
+            if(queues != null){
+                logger.debug('Shutting down mq service.');
+                queues.close(cb);
+            } else {
+                setTimeout(cb, 0);
+            }
+        },
+        closeServer: function(cb) {
+            if(server != null){
+                logger.debug('Shutting down http server.');
+                server.close(cb);
+            } else {
+                setTimeout(cb, 0);
+            }
+        }
+    }, function(err, res){
+        process.exit(err ? 1 : 0);
+    });
 }
 
 process.on('SIGTERM', shutdown);

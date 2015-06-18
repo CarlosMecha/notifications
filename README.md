@@ -38,7 +38,7 @@ npm install
 ```
 
 ## Tests
-TODO (for v2).
+Run `npm test`.
 
 ## Scripts
 - `conf.sh`: Host and port configurations.

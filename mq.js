@@ -17,7 +17,7 @@ var _schema = './schema.sql';
  * @param logger [Optional] Logger.
  */
 function Mq(databaseFile) {
-    if(databaseFile && typeof database === 'string') {
+    if(databaseFile && typeof databaseFile === 'string') {
         this._dbFile = databaseFile;
     } else {
         this._dbFile = ':memory:';
@@ -56,7 +56,7 @@ Mq.prototype.defaultDecoder = function(serializedObj) {
         return null;
     } else if(typeof obj === 'string') {
         try{
-            return JSON.stringify(obj);
+            return JSON.parser(obj);
         } catch(e) {
             return obj;
         };
@@ -166,7 +166,7 @@ Mq.prototype.listen = function(callback){
  * @param topic Message topic.
  * @param format An string defining the payload's format.
  * @param payload Message payload.
- * @param callback Callback that accepts an error has first parameter.
+ * @param callback Callback that accepts an error has first parameter, and a uuid as a second parameter.
  */
 Mq.prototype.push = function(topic, format, payload, callback){
     var uuid = uuidGenerator.v1();
@@ -174,7 +174,9 @@ Mq.prototype.push = function(topic, format, payload, callback){
     var timestamp = Date.now();
     var encoder = this.encoders.hasOwnProperty(format) ? this.encoders[format] : this.defaultEncoder;
     this.logger.debug('Using encoder %s', encoder, {});
-    this._insert.run(uuid, topic, format, timestamp, encoder(payload), callback);
+    this._insert.run(uuid, topic, format, timestamp, encoder(payload), function(err){
+        callback(err, err ? null : uuid);    
+    });
 };
 
 /**
@@ -240,27 +242,47 @@ Mq.prototype.get = function(topic, limit, requeue, callback){
 /**
  * Closes the database.
  */
-Mq.prototype.close = function() {
-    try {
-        if(this._db) {
-            if(this._insert){
-                this._insert.finalize();
+Mq.prototype.close = function(callback) {
+    var self = this;
+    
+    if(this._db) {
+        async.series({
+            insert: function(cb) {
+                if(self._insert){
+                    self._insert.finalize(cb);   
+                } else {
+                    setTimeout(cb, 0);
+                }
+            },
+            select: function(cb) {
+                if(self._select){
+                    self._select.finalize(cb);   
+                } else {
+                    setTimeout(cb, 0);
+                }
+            },
+            delete: function(cb) {
+                if(self._delete){
+                    self._delete.finalize(cb);   
+                } else {
+                    setTimeout(cb, 0);
+                }
+            },
+            db: function(cb) {
+                self._db.close(cb);
             }
-            if(this._select){
-                this._select.finalize();
+        }, function(err, res){
+            if(err){
+                self.logger.error('Error closing the database: %s', err, {});
             }
-            if(this._delelete){
-                this._delete.finalize();
-            }
-            this._db.close();
-        }
-    } catch(err) {
-        this.logger.error('Error closing the database: %s', err, {});
-    } finally {
-        this._insert = null;
-        this._select = null;
-        this._delete = null;
-        this._db = null;
+            self._insert = null;
+            self._select = null;
+            self._delete = null;
+            self._db = null;
+            callback(err);
+        });
+    } else {
+        setTimeout(callback, 0);
     }
 }
 
