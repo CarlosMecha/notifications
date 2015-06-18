@@ -3,9 +3,10 @@ var async = require('async');
 var express = require('express');
 var bodyParser = require('body-parser');
 var winston = require('winston');
+var path = require('path');
 var util = require('util');
 var Mq = require('./mq');
-var config = require('./config');
+var config = require((process.argv.length < 3) ? './config' : path.resolve(process.argv[2]));
 
 // Logging
 var transports = [];

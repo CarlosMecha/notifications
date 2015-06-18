@@ -27,7 +27,7 @@ the default encoder and decoder.
 To add custom encoders/decoders, update `mq.encoders` and `mq.decoders` with the supported format types. 
 
 ## Configuration
-Check `config.json`.
+The default configuration file is `config.json` if it's not specified as an argument.
 
 By default, the server listen the port 3000.
 
@@ -38,17 +38,18 @@ npm install
 ```
 
 ## Tests
-Run `npm test`.
+Run:
+```bash
+$ npm start test/test-config.json
+$ npm test
+```
 
-## Scripts
-- `conf.sh`: Host and port configurations.
-- `get.sh <topic> <limit>`: Gets and requeues notifications.
-- `pop.sh <topic> <limit>`: Retrieves notifications.
-- `push.sh <topic> <data>`: Pushes a notification.  
+## Clients
+See `clients/` folder.
 
 ## Start the server
 
 ```bash
-$ npm start
+$ npm start [configuration file]
 ```
 
