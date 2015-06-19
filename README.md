@@ -36,11 +36,21 @@ Before start, remember to run:
 npm install
 ```
 
+### Configuration for the node client
+```bash
+$ npm link
+$ cd client/node
+$ npm link notifications
+$ npm install
+```
+
+### Configuration for the bash client.
+Just install `curl`.
+
 ## Tests
 Run:
 ```bash
 $ npm start test/test-config # Optional step for integration tests.
-
 $ npm test
 ```
 
