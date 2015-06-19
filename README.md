@@ -1,14 +1,13 @@
 # Notifications
 
+Small HTTP server to push and retrieve notifications.
+
 ## Author
 
 Carlos Mecha, 2015
 
-## Version 1
-
-Developed form 06/15/2015 and released on 06/19/2015.
-
-Small HTTP server to push and retrieve notifications.
+- Version 1: Developed from 06/08/2015 and released on 06/12/2015.
+- Version 2: Developed from 06/15/2015 and released on 06/19/2015.
 
 ## Routes
 
