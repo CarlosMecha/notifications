@@ -18,6 +18,8 @@
     "chai": "^3.0.0",
     "mocha": "^2.2.5",
     "notifications": "file:../..",
-    "request": "^2.58.0"
+    "proxyquire": "^1.5.0",
+    "request": "^2.58.0",
+    "sinon": "^1.15.3"
   }
 }
