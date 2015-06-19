@@ -40,7 +40,14 @@ npm install
 ## Tests
 Run:
 ```bash
-$ npm start test/test-config.json
+$ npm start test/test-config # Optional step for integration tests.
+
+$ npm test
+```
+
+And for the node client:
+```bash
+$ cd client/node
 $ npm test
 ```
 

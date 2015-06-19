@@ -20,10 +20,11 @@ describe('HTTP Server', function(){
                     protocol: 'http',
                     hostname: config.host,
                     port: config.port,
-                    pathname: ''
+                    pathname: '/'
                 })
             }, function(err, response, body) {
                 expect(err).to.not.exists;
+                expect(response).to.be.ok;
                 done();
             });
         });
