@@ -10,7 +10,9 @@
     "express": "^4.12.4",
     "mocha": "^2.2.5",
     "node-uuid": "^1.4.3",
+    "proxyquire": "^1.5.0",
     "request": "^2.58.0",
+    "sinon": "^1.15.3",
     "sqlite3": "^3.0.8",
     "winston": "^1.0.0"
   },
