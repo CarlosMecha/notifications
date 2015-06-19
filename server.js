@@ -49,7 +49,7 @@ app.use(bodyParser.json());
 
 app.get('/:topic?', function(req, res){
     logger.debug('Received GET %s', req.originalUrl);
-    var topic = req.params.topic;
+    var topic = req.params.topic || '_default';
     var limit = req.query.limit || 1;
     var requeue = (req.query.requeue !== undefined);
 
@@ -70,7 +70,7 @@ var defaultContentType = 'application/json';
 app.post('/:topic?', function(req, res){
     logger.debug('Received POST %s', req.originalUrl);
     logger.debug('Body %j', req.body, {});
-    var topic = req.params.topic || 'default';
+    var topic = req.params.topic || '_default';
     var format = req.get('Content-Type') || defaultContentType;
     queues.push(topic, format, req.body, function(err){
         if(err){
@@ -83,7 +83,7 @@ app.post('/:topic?', function(req, res){
     });
 });
 
-function shutdown() {
+function shutdown(callback) {
     logger.info('Shutting down the server.');
     async.series({
         closeMq: function(cb) {
@@ -103,15 +103,25 @@ function shutdown() {
             }
         }
     }, function(err, res){
-        process.exit(err ? 1 : 0);
+        callback(err);
     });
 }
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+process.on('SIGTERM', function(){
+    shutdown(function(err){
+        process.exit(err ? 1 : 0);
+    });
+});
+process.on('SIGINT', function(){
+    shutdown(function(err){
+        process.exit(err ? 1 : 0);
+    }); 
+});
 process.on('uncaughtException', function(err) {
     logger.error('Caught exception: %s', err, err);
-    shutdown();
+    shutdown(function(err){
+        process.exit(err ? 1 : 0);
+    }); 
 });
 
 // Init
@@ -137,4 +147,16 @@ async.series({
         logger.debug('Server initialized.');
     }
 });
+
+/**
+ * To control the server from an external application.
+ */
+module.exports = {
+    server: server,
+    mq: queues,
+    host: config.host,
+    port: config.port,
+    logger: logger,
+    shutdown: shutdown
+};
 
