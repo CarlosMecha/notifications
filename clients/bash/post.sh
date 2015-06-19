@@ -1,10 +1,29 @@
 
+#
+# Uploads a notification to the server.
+# 
+# See 'conf.sh'.
+# 
+
 . conf.sh
 
-TOPIC=$1;
-DATA=$2;
+function help() {
+    echo "Usage: ./post.sh <topic> <data>"
+}
 
-curl -H "Content-Type: application/json" -X POST -d "$DATA" "http://$HOST:$PORT/$TOPIC";
+if [ "$#" -ne 2 ]; then {
+    help;
+    exit 1;
+} fi;
+
+TOPIC="$1";
+DATA="$2";
+
+$CURL -H "Content-Type: $CONTENT_TYPE" -X POST -d "$DATA" "http://$HOST:$PORT/$TOPIC";
+
+RES="$?";
 
 echo;
+
+exit $RES;
 

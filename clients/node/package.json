@@ -1,0 +1,25 @@
+{
+  "name": "notifications-client",
+  "version": "1.0.0",
+  "description": "A client to retrieve and push notifications to the server.",
+  "main": "notif-client.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --reporter spec"
+  },
+  "keywords": [
+    "notifications",
+    "sqlite3",
+    "server"
+  ],
+  "author": "Carlos Mecha",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "async": "^1.2.1",
+    "chai": "^3.0.0",
+    "mocha": "^2.2.5",
+    "notifications": "file:../..",
+    "proxyquire": "^1.5.0",
+    "request": "^2.58.0",
+    "sinon": "^1.15.3"
+  }
+}
