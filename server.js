@@ -10,6 +10,7 @@ var config = require((process.argv.length < 3) ? './config' : path.resolve(proce
 
 var Mq = require('./mq');
 var logger = require('./lib/logging')(config.log);
+var routes = require('./lib/routes');
 
 // Mq service
 var dbFile = null;
@@ -35,41 +36,7 @@ var app = express();
 
 app.use(bodyParser.json());
 
-app.get('/:topic?', function(req, res){
-    logger.debug('Received GET %s', req.originalUrl);
-    var topic = req.params.topic || '_default';
-    var limit = req.query.limit || 1;
-    var requeue = (req.query.requeue !== undefined);
-
-    logger.debug('Translated to GET /%s?limit=%d&requeue=%s', topic, limit, requeue);
-
-    queues.get(topic, limit, requeue, function(err, results){
-        if(err){
-            logger.error(err);
-            res.status(500).json({error: err});
-        } else {
-            logger.debug('Returned from %s, %d results: %j', req.originalUrl, results.length, results, {});
-            res.json(results);
-        }
-    });
-});
-
-var defaultContentType = 'application/json';
-app.post('/:topic?', function(req, res){
-    logger.debug('Received POST %s', req.originalUrl);
-    logger.debug('Body %j', req.body, {});
-    var topic = req.params.topic || '_default';
-    var format = req.get('Content-Type') || defaultContentType;
-    queues.push(topic, format, req.body, function(err){
-        if(err){
-            logger.error(err);
-            res.status(500).json({error: err});
-        } else {
-            logger.debug('Returned OK from %s', req.originalUrl);
-            res.json({code: 'OK'});
-        }
-    });
-});
+routes(app, queues, logger);
 
 function shutdown(callback) {
     logger.info('Shutting down the server.');
