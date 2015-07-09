@@ -58,7 +58,7 @@ describe('Client', function(){
                 });
             },
             get: function(cb) {
-                client.get(topic, 1, true, function(err, res){
+                client.get(topic, 1, false, function(err, res){
                     expect(res).to.be.ok;
                     expect(res).to.have.length(1);
                     var notif = res[0];
