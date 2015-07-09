@@ -60,18 +60,18 @@ function stop(err, callback) {
 }
 
 process.on('SIGTERM', function(){
-    stop(function(err){
+    stop(null, function(err){
         process.exit(err ? 1 : 0);
     });
 });
 process.on('SIGINT', function(){
-    stop(function(err){
+    stop(null, function(err){
         process.exit(err ? 1 : 0);
     }); 
 });
 process.once('uncaughtException', function(err) {
     logger.error('Caught exception: %s', err, err);
-    stop(process.exit.bind(null, 1)); 
+    stop(err, process.exit.bind(null, 1)); 
 });
 
 // Init

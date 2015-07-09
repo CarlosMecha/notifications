@@ -72,7 +72,7 @@ $ npm start [configuration file]
 ## Contribute
 
 These tiny pieces of code (notifications, mqlite, etc) are ideas or prototypes developed in
-~6 hours. If you find this code useful feel free to do whatever you want with it. Help/ideas/bug
+~6 hours. If you find this code useful, feel free to do whatever you want with it. Help/ideas/bug
 reporting are also welcome.
 
 Thanks!
