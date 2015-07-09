@@ -79,6 +79,52 @@ describe('Client', function(){
             done();
         });    
     });
+
+    it('stores and retrieves the default topic', function(done){
+        
+        var client = new Client(config.port, config.host);
+        var contentType = 'application/json';
+        var payload = {foo: 'foo-test'};
+        var randomTopic = null;
+
+        async.series({
+            topic: function(cb) {
+                require('crypto').randomBytes(48, function(ex, buf) {
+                    randomTopic = buf.toString('hex');
+                    cb();
+                });
+            },
+            post: function(cb) {
+                client.post(randomTopic, payload, function(err){
+                    cb(err);
+                });
+            },
+            post: function(cb) {
+                client.post(null, payload, function(err){
+                    cb(err);
+                });
+            },
+            get: function(cb) {
+                client.get(null, 1, false, function(err, res){
+                    expect(res).to.be.ok;
+                    expect(res).to.have.length(1);
+                    var notif = res[0];
+                    expect(notif).to.be.ok;
+                    expect(notif.topic).to.not.exits;
+                    expect(notif.uuid).to.be.ok;
+                    expect(notif.timestamp).to.be.ok;
+                    expect(notif.format).to.be.ok;
+                    expect(notif.format).to.equals(contentType);
+                    expect(notif.payload).to.be.ok;
+                    expect(notif.payload.foo).to.equals(payload.foo);
+                    cb();
+                });
+            }
+        }, function(err) {
+            expect(err).to.not.exists;
+            done();
+        });    
+    });
 });
 
 

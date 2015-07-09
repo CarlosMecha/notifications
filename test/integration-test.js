@@ -102,6 +102,70 @@ describe('HTTP Server', function(){
 
         });    
 
+        it('stores without topic', function(done){
+
+            request.post({
+                body: JSON.stringify(payload),
+                uri: url.format({
+                    protocol: 'http',
+                    hostname: config.host,
+                    port: config.port
+                }),
+                headers: {
+                    'User-Agent': 'test-notif-client',
+                    'Content-Type': contentType,
+                    'Accept': contentType
+                }
+            }, function(err, response, body) {
+                expect(err).to.not.exists;
+                expect(body).to.be.ok;
+                done();
+            });
+
+        });    
+
+        it('retrieves without topic', function(done){
+
+            async.waterfall([
+                function(callback) {
+                    request.get({
+                        uri: url.format({
+                            protocol: 'http',
+                            hostname: config.host,
+                            port: config.port
+                        }),
+                        headers: {
+                            'User-Agent': 'test-notif-client',
+                            'Content-Type': contentType,
+                            'Accept': contentType
+                        }
+                    }, function(err, response, body) {
+                        expect(err).to.not.exists;
+                        expect(body).to.be.ok;
+                        callback(body);
+                    });
+                },
+                function(body, callback) {
+                    expect(body).to.be.ok;
+                    expect(body).to.have.length(limit);
+                    var notif = body[0];
+                    expect(notif).to.be.ok;
+                    expect(notif.topic).to.not.exists;
+                    expect(notif.uuid).to.be.ok;
+                    expect(notif.timestamp).to.be.ok;
+                    expect(notif.format).to.be.ok;
+                    expect(notif.format).to.equals(contentType);
+                    expect(notif.payload).to.be.ok;
+                    expect(notif.payload.foo).to.equals(payload.foo);
+                    callback();
+                }
+            ], function(err) {
+                expect(err).to.not.exists;
+                done();
+            });
+
+        });    
+
     });
 });
 

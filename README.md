@@ -11,11 +11,11 @@ Carlos Mecha, 2015
 
 ## Routes
 
-- `GET /:topic?`: Retrieves notifications by topic (all if topic is not set). The route accepts a
+- `GET /:topic?`: Retrieves notifications by topic (global notifications if topic is not set). The route accepts a
 query parameter `limit` with limit of returned records. Also, `requeue` could be specified and the retrieved messages won't
 be deleted.
 
-- `POST /:topic?`: Pushes a notification to the server. If the topic is not set, the default one will be assigned.
+- `POST /:topic?`: Pushes a notification to the server. If the topic is not set, the notification would be considered global.
 The body defines the payload of the notification. `Content-Type` header defines the format of the payload. Currently supported:
 
     - `application/json`: JSON payload. Default if the header is not provided.
