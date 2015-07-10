@@ -8,16 +8,26 @@
 . conf.sh
 
 function help() {
-    echo "Usage: ./post.sh <topic> <data>"
+    echo "Usage: ./post.sh [-t topic] <data>"
 }
 
-if [ "$#" -ne 2 ]; then {
-    help;
-    exit 1;
+if [ "$1" == "-t" ]; then {
+    if [ "$#" -ne 3 ]; then {
+        help;
+        exit 1;
+    } fi;
+
+    TOPIC="$2";
+    DATA="$3";
+} else {
+    if [ "$#" -ne 1 ]; then {
+        help;
+        exit 1;
+    } fi;
+    TOPIC="";
+    DATA="$1";
 } fi;
 
-TOPIC="$1";
-DATA="$2";
 
 $CURL -H "Content-Type: $CONTENT_TYPE" -X POST -d "$DATA" "http://$HOST:$PORT/$TOPIC";
 

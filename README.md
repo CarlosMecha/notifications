@@ -2,12 +2,15 @@
 
 Small HTTP server to push and retrieve notifications.
 
+It depends on [MQLite](http://github.com/CarlosMecha/mqlite) `^v0.2.x`.
+
 ## Author
 
 Carlos Mecha, 2015
 
 - Version 1: Developed from 06/08/2015 and released on 06/12/2015.
 - Version 2: Developed from 06/15/2015 and released on 06/19/2015.
+- Version 3: Developed fmor 07/06/2015 and released on 07/10/2015.
 
 ## Routes
 
@@ -25,6 +28,8 @@ the default encoder and decoder.
 
 To add custom encoders/decoders, update `mq.encoders` and `mq.decoders` with the supported format types. 
 
+*NOTE:* Just `application/json` is fully tested. There might be some bugs using different content types.
+
 ## Configuration
 The default configuration file is `config.json` if it's not specified as an argument.
 
@@ -36,27 +41,10 @@ Before start, remember to run:
 npm install
 ```
 
-### Configuration for the node client
-```bash
-$ npm link
-$ cd client/node
-$ npm link notifications
-$ npm install
-```
-
-### Configuration for the bash client.
-Just install `curl`.
-
 ## Tests
 Run:
 ```bash
 $ npm start test/test-config # Optional step for integration tests.
-$ npm test
-```
-
-And for the node client:
-```bash
-$ cd client/node
 $ npm test
 ```
 
@@ -76,3 +64,4 @@ These tiny pieces of code (notifications, mqlite, etc) are ideas or prototypes d
 reporting are also welcome.
 
 Thanks!
+
