@@ -1,7 +1,23 @@
 
 # Notifications client
 
-Tiny client to retrieve and post notifications to the server.
+Tiny client to retrieve and post notifications to the server as JSON.
+
+## Configuration for the node client
+```bash
+$ npm link
+$ cd client/node
+$ npm link notifications
+$ npm install
+```
+
+## Tests
+Make sure the server is running for the integrations tests.
+
+```bash
+$ cd client/node
+$ npm test
+```
 
 ## Usage
 

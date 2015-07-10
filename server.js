@@ -1,162 +1,81 @@
 
 var async = require('async');
-var express = require('express');
-var bodyParser = require('body-parser');
-var winston = require('winston');
 var path = require('path');
-var util = require('util');
-var Mq = require('./mq');
+
+var httpServer = require('./lib/http-server');
+var logging = require('./lib/logging');
+var mqDriver = require('./lib/mq-driver');
+
+// Config
 var config = require((process.argv.length < 3) ? './config' : path.resolve(process.argv[2]));
+var logger = logging(config.log);
 
-// Logging
-var transports = [];
-if(config.log.persistent) {
-    transports.push(new winston.transports.File({
-            filename: config.log.filename,
-            level: config.log.level
-    }));
-} else {
-    transports.push(new winston.transports.Console({
-            level: config.log.level
-    }));
-}
+var mq = null;
 
-var logger = new winston.Logger({transports: transports});
+function start() {
+    logger.debug('Initializing notifications.');
 
-// Mq service
-var dbFile = null;
-if(config.db.persistent) {
-    logger.debug('Set persistent mq service.');
-    dbFile = config.db.filename;
-} else {
-    logger.debug('Set ephemeral mq service.');
-}
-
-var queues = new Mq(dbFile);
-queues.encoders = {
-    'application/json': JSON.stringify
-};
-queues.decoders = {
-    'application/json': JSON.parse
-};
-queues.logger = logger;
-
-// Express App
-var server = null;
-var app = express();
-
-app.use(bodyParser.json());
-
-app.get('/:topic?', function(req, res){
-    logger.debug('Received GET %s', req.originalUrl);
-    var topic = req.params.topic || '_default';
-    var limit = req.query.limit || 1;
-    var requeue = (req.query.requeue !== undefined);
-
-    logger.debug('Translated to GET /%s?limit=%d&requeue=%s', topic, limit, requeue);
-
-    queues.get(topic, limit, requeue, function(err, results){
+    // Start listening
+    async.series({
+        initMq: function(callback){
+            mqDriver(function(err, driver) {
+                if(err) {
+                    callback(err);
+                } else {
+                    mq = driver;
+                    callback();
+                }
+            }, config.db, logger);
+        },
+        initServer: function(callback){
+            httpServer.start(config, mq, logger, callback);
+        }
+    }, function(err, res) {
         if(err){
             logger.error(err);
-            res.status(500).json({error: err});
         } else {
-            logger.debug('Returned from %s, %d results: %j', req.originalUrl, results.length, results, {});
-            res.json(results);
+            logger.debug('Server initialized.');
         }
     });
-});
+}
 
-var defaultContentType = 'application/json';
-app.post('/:topic?', function(req, res){
-    logger.debug('Received POST %s', req.originalUrl);
-    logger.debug('Body %j', req.body, {});
-    var topic = req.params.topic || '_default';
-    var format = req.get('Content-Type') || defaultContentType;
-    queues.push(topic, format, req.body, function(err){
-        if(err){
-            logger.error(err);
-            res.status(500).json({error: err});
-        } else {
-            logger.debug('Returned OK from %s', req.originalUrl);
-            res.json({code: 'OK'});
-        }
-    });
-});
-
-function shutdown(callback) {
+function stop(err, callback) {
     logger.info('Shutting down the server.');
     async.series({
         closeMq: function(cb) {
-            if(queues != null){
+            if(mq != null){
                 logger.debug('Shutting down mq service.');
-                queues.close(cb);
+                mq.disconnect(cb);
             } else {
                 setTimeout(cb, 0);
             }
         },
         closeServer: function(cb) {
-            if(server != null){
-                logger.debug('Shutting down http server.');
-                server.close(cb);
-            } else {
-                setTimeout(cb, 0);
-            }
+            logger.debug('Shutting down http server.');
+            httpServer.stop(err, cb);
         }
     }, function(err, res){
         callback(err);
     });
 }
 
-process.on('SIGTERM', function(){
-    shutdown(function(err){
+function _exit(err) {
+    setTimeout(function() {
         process.exit(err ? 1 : 0);
-    });
+    }, 3000);
+}
+
+process.on('SIGTERM', function(){
+    stop(null, _exit);
 });
 process.on('SIGINT', function(){
-    shutdown(function(err){
-        process.exit(err ? 1 : 0);
-    }); 
+    stop(null, _exit); 
 });
-process.on('uncaughtException', function(err) {
+process.once('uncaughtException', function(err) {
     logger.error('Caught exception: %s', err, err);
-    shutdown(function(err){
-        process.exit(err ? 1 : 0);
-    }); 
+    stop(err, _exit); 
 });
 
 // Init
-logger.debug('Initializing the server.');
-
-// Start listening
-async.series({
-    initMq: function(callback){
-        logger.info('MQ Service ready and listening.');
-        queues.listen(callback);
-    },
-    initServer: function(callback){
-        server = app.listen(config.port, config.host, function(){
-            var host = server.address().address;
-            var port = server.address().port;
-            logger.info('HTTP server listening at http://%s:%s', host, port);
-        });
-    }
-}, function(err, res) {
-    if(err){
-        logger.error(err);
-    } else {
-        logger.debug('Server initialized.');
-    }
-});
-
-/**
- * To control the server from an external application.
- */
-module.exports = {
-    server: server,
-    mq: queues,
-    host: config.host,
-    port: config.port,
-    logger: logger,
-    shutdown: shutdown
-};
+start();
 

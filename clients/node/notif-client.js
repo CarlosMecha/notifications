@@ -69,7 +69,7 @@ NotifClient.prototype.get = function(topic, limit, requeue, callback){
             protocol: 'http',
             hostname: this.host,
             port: this.port,
-            pathname: topic,
+            pathname: topic || '/',
             query: query
         }),
         headers: this._headers
@@ -102,7 +102,7 @@ NotifClient.prototype.post = function(topic, payload, callback) {
             protocol: 'http',
             hostname: this.host,
             port: this.port,
-            pathname: topic
+            pathname: topic || '/'
         }),
         headers: this._headers
     }, function(err, response, body){
